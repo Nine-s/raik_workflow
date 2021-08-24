@@ -13,6 +13,7 @@ workflow {
     read_pairs_ch = channel.fromFilePairs( params.reads, checkIfExists: true ) 
     FASTQC( read_pairs_ch )
     FASTP( read_pairs_ch )
-    SALMON_QUANTIFY(FASTP.out.sample_trimmed, params.reference_transcriptome)//, SALMON_INDEX_REFERENCE.out)
+    SALMON_INDEX_REFERENCE( params.reference_transcriptome )
+    SALMON_QUANTIFY(FASTP.out.sample_trimmed, SALMON_INDEX_REFERENCE.out )//, SALMON_INDEX_REFERENCE.out)
 }
 

@@ -6,11 +6,11 @@ process SALMON_INDEX_REFERENCE {
     path(reference)
 
     output:
-    tuple path(reference), path("${reference.baseName}*")
+    path 'index'
 
     script:
     """
-    salmon index -t ${reference} -i ${reference.baseName}.index
+    salmon index -t ${reference} -i index
     """
 }
 
@@ -20,14 +20,31 @@ process SALMON_QUANTIFY {
     
     input:
     tuple val(sample_name), path(reads)
+    path index
+
+    output:
+    file ("transcripts_quant_${sample_name}/quant.sf")
+
+    script:
+    """
+    salmon quant  -l A -i $index -1 ${reads[0]} -2 ${reads[1]} --validateMappings -o transcripts_quant_${sample_name} --useVBOpt --gcBias --posBias
+    """
+}
+
+process SALMON_LOL {
+    label 'salmon'
+    publishDir params.outdir
+    
+    input:
+    tuple val(sample_name), path(reads)
     path(reference)
 
     output:
-    file ("transcripts_quant/quant.sf")
+    file ("transcripts_quant_${sample_name}/quant.sf")
 
     script:
     """
     salmon index -t ${reference} -i ${reference.baseName}
-    salmon quant  -l A -i ${reference.baseName} -1 ${reads[0]} -2 ${reads[1]} --validateMappings -o transcripts_quant --useVBOpt --gcBias --posBias
+    salmon quant  -l A -i ${reference.baseName} -1 ${reads[0]} -2 ${reads[1]} --validateMappings -o transcripts_quant_${sample_name} --useVBOpt --gcBias --posBias
     """
 }
